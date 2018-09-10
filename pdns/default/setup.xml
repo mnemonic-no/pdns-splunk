@@ -1,0 +1,25 @@
+<setup>
+
+    <block title="PassiveDNS Setup" endpoint="pdns/pdns_config" entity="config">
+        <text>This URL will be used for external lookups towards the Passive DNS API</text>
+
+        <input field="api_url">
+            <label>Passive DNS API URL</label>
+            <type>text</type>
+        </input>
+
+        <text>If specified, this API key will be used on passive DNS queries</text>
+
+        <input field="api_key">
+            <label>Passive DNS API key</label>
+            <type>text</type>
+        </input>
+
+        <input field="proxy">
+            <label>Proxy</label>
+            <type>text</type>
+        </input>
+
+    </block>
+
+</setup>
