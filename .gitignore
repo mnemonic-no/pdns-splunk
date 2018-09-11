@@ -1,5 +1,5 @@
-act/local/*
+pdns/local/*
 __pycache__
 *.pyc
-act/metadata/local.meta
+pdns/metadata/local.meta
 dist/*
