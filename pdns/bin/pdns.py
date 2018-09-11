@@ -7,6 +7,9 @@ from splunk.clilib import cli_common as cli
 class resourceLimitExceeded(Exception):
     pass
 
+class connectionError(Exception):
+    pass
+
 def value_format(field, value):
     if isinstance(value, int) and (value > 10 ** 10):
         return time.strftime("%Y.%m.%d %H:%M:%S %Z", time.localtime(value / 1000))
@@ -32,6 +35,7 @@ class PDNS(object):
         self.opener = opener
         self.api_url = api_url
         self.api_key = api_key
+        self.proxy = proxy
 
     def pdns_batch(self, value, limit):
         """
@@ -53,11 +57,14 @@ class PDNS(object):
 
             parameters["offset"] = offset
 
-            result = json.loads(self.opener.open("{}/pdns/v3/{}?{}".format(
-                self.api_url,
-                value,
-                urllib.urlencode(parameters)
-            )).read())
+            try:
+                result = json.loads(self.opener.open("{}/pdns/v3/{}?{}".format(
+                    self.api_url,
+                    value,
+                    urllib.urlencode(parameters)
+                )).read())
+            except urllib2.URLError as e:
+                raise connectionError("Unable to connect to API. Make sure api_host ({}) and proxy ({}) is correct. Error: {}".format(self.api_url, self.proxy, e))
 
             response_code = result["responseCode"]
 

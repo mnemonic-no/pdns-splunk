@@ -12,7 +12,6 @@ def main():
 
     events, _, _ = Intersplunk.getOrganizedResults()
 
-
     # Annotate events
     for event in events:
         value = []
@@ -26,11 +25,18 @@ def main():
         query = {}
         answer = {}
         for val in value:
-            for res in p.query(val, limit=limit):
-                if res["query"] != value:
-                    query[res["query"]] = True
-                if res["answer"] != value:
-                    answer[res["answer"]] = True
+            try:
+                for res in p.query(val, limit=limit):
+                    if res["query"] != value:
+                        query[res["query"]] = True
+                    if res["answer"] != value:
+                        answer[res["answer"]] = True
+            except pdns.connectionError as e:
+                Intersplunk.parseError(str(e))
+                return
+            except pdns.resourceLimitExceeded as e:
+                Intersplunk.parseError(str(e))
+                return
 
         if query:
             if "query" not in event:

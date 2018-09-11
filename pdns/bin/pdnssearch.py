@@ -17,6 +17,9 @@ def main():
     for value in opts:
         try:
             result = p.query(value, limit = limit)
+        except pdns.connectionError as e:
+            Intersplunk.parseError(str(e))
+            return
         except pdns.resourceLimitExceeded as e:
             Intersplunk.parseError(str(e))
             return
