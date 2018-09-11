@@ -5,6 +5,9 @@ filename=dist/pdns-${version}.spl
 mkdir -p dist
 rm -f $filename
 
+# Update documentation from README.md
+cat README.md | sed -e 's/\!\[.*\?\]\(.*\?\)//g' | pandoc -t plain | sed '/^$/N;/^\n$/D' > pdns/README
+
 # Exclude files that will make splunk-appinspect fail
 tar zcf $filename \
     --exclude-vcs-ignores \
