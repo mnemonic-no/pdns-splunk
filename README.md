@@ -32,7 +32,7 @@ You can specify a generic search using the `pdns` command, to execute a search t
 
 
 ## PDNS annotation
-You can use the `acta` command to annotate existing events with data from an PDNS:
+You can use the `pdnsa` command to annotate existing events with data from an PDNS:
 
 ```
 .... | acta field1 [... fieldN] [limit=<max results>]
