@@ -33,7 +33,7 @@ search towards the Passive DNS API.
 
 PDNS annotation
 
-You can use the acta command to annotate existing events with data from
+You can use the pdnsa command to annotate existing events with data from
 an PDNS:
 
     .... | acta field1 [... fieldN] [limit=<max results>]
