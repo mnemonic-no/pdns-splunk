@@ -64,17 +64,17 @@ class PDNS(object):
                     urllib.urlencode(parameters)
                 )).read())
             except urllib2.URLError as e:
+                if str(e) == "HTTP Error 402: Payment Required":
+                    text = "Resource limit towards API exceeded. "
+                    if not self.api_key:
+                        text += "Request for an API key to get a larger quota."
+                    else:
+                        text += "Request a larger quota for your API key."
+                    raise resourceLimitExceeded(text)
+
                 raise connectionError("Unable to connect to API. Make sure api_host ({}) and proxy ({}) is correct. Error: {}".format(self.api_url, self.proxy, e))
 
             response_code = result["responseCode"]
-
-            if response_code == 402:
-                text = "Resource limit towards API exceeded. "
-                if not self.api_key:
-                    text += "Request for an API key to get a higher quota."
-                else:
-                    text += "Request a larger quaota for your API key."
-                raise resourceLimitExceeded(text)
 
             data = result["data"]
             count = result.get("count", 0)
