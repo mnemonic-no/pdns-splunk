@@ -74,15 +74,18 @@ class PDNS(object):
 
                 raise connectionError("Unable to connect to API. Make sure api_host ({}) and proxy ({}) is correct. Error: {}".format(self.api_url, self.proxy, e))
 
-            response_code = result["responseCode"]
-
-            data = result["data"]
             count = result.get("count", 0)
             if count == 0:
                 last = True
 
-            result_list += data
-            offset += len(data)
+            for row in result["data"]:
+                if "customer" in row and isinstance(row["customer"], dict):
+                    row["customer"] = row["customer"]["shortName"]
+
+                result_list.append(row)
+
+            # result_list += data
+            offset += len(result["data"])
 
             if offset >= count or offset >= limit:
                 last = True
