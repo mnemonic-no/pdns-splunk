@@ -3,6 +3,7 @@ from splunk import Intersplunk
 
 import pdns
 
+
 def main():
     p = pdns.PDNS()
 
@@ -47,6 +48,7 @@ def main():
                 event["answer"] = answer.keys()
 
     Intersplunk.outputResults(events)
+
 
 try:
     main()

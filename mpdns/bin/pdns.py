@@ -1,14 +1,16 @@
-import urllib2
-import urllib
+import requests
 import time
 import json
 from splunk.clilib import cli_common as cli
 
+
 class resourceLimitExceeded(Exception):
     pass
 
+
 class connectionError(Exception):
     pass
+
 
 def value_format(field, value):
     if isinstance(value, int) and (value > 10 ** 10):
@@ -18,24 +20,10 @@ def value_format(field, value):
 
 class PDNS(object):
     def __init__(self):
-        cfg = cli.getConfStanza('pdns', 'config')
-        api_url = cfg.get("api_url")
-        api_key = cfg.get("api_key")
-        proxy = cfg.get("proxy")
-
-        if proxy:
-            proxy_handler = urllib2.ProxyHandler({'http': proxy})
-            opener = urllib2.build_opener(proxy_handler)
-        else:
-            opener = urllib2.build_opener()
-
-        if api_key:
-            opener.addheaders = [('Argus-API-Key', api_key)]
-
-        self.opener = opener
-        self.api_url = api_url
-        self.api_key = api_key
-        self.proxy = proxy
+        cfg = cli.getConfStanza("pdns", "config")
+        self.api_url = cfg.get("api_url")
+        self.api_key = cfg.get("api_key")
+        self.proxy = cfg.get("proxy")
 
     def pdns_batch(self, value, limit):
         """
@@ -44,35 +32,40 @@ class PDNS(object):
         """
         result_list = []
         offset = 0
-        size = 25 # Page size
+        size = 25  # Page size
         count = 0
         last = False
 
         parameters = {"limit": size}
+        headers = {"Argus-API-Key": self.api_key} if self.api_key else None
+        proxies = {"http": self.proxy, "https": self.proxy} if self.proxy else None
 
         while (not last) and (offset < limit):
 
             if offset + size > limit:
-                parameters["limit"] = (limit - offset)
+                parameters["limit"] = limit - offset
 
             parameters["offset"] = offset
 
-            try:
-                result = json.loads(self.opener.open("{}/pdns/v3/{}?{}".format(
-                    self.api_url,
-                    value,
-                    urllib.urlencode(parameters)
-                )).read())
-            except urllib2.URLError as e:
-                if str(e) == "HTTP Error 402: Payment Required":
-                    text = "Resource limit towards API exceeded. "
-                    if not self.api_key:
-                        text += "Request for an API key to get a larger quota."
-                    else:
-                        text += "Request a larger quota for your API key."
-                    raise resourceLimitExceeded(text)
+            res = requests.get(
+                f"{self.api_url}/pdns/v3/{value}", json=parameters, proxies=proxies
+            )
 
-                raise connectionError("Unable to connect to API. Make sure api_host ({}) and proxy ({}) is correct. Error: {}".format(self.api_url, self.proxy, e))
+            if res.status_code == 402:
+                text = "Resource limit towards API exceeded. "
+                if not self.api_key:
+                    text += "Request for an API key to get a larger quota."
+                else:
+                    text += "Request a larger quota for your API key."
+                raise resourceLimitExceeded(text)
+
+            elif res.status_code != 200:
+                raise connectionError(
+                    f"Unable to connect to API. Make sure api_host ({self.api_url}) and " +
+                    f"proxy ({self.proxy}) is correct. Error: {res.content}"
+                    )
+
+            result = res.json()
 
             count = result.get("count", 0)
             if count == 0:
@@ -92,8 +85,8 @@ class PDNS(object):
 
         return result_list
 
-    def query(self, value, limit = 100):
-        result = self.pdns_batch(value, limit = limit)
+    def query(self, value, limit=100):
+        result = self.pdns_batch(value, limit=limit)
 
         filtered = []
 

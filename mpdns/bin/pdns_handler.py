@@ -7,17 +7,18 @@ fields = {
     "proxy": {},
 }
 
+
 class ConfigApp(admin.MConfigHandler):
-    '''
+    """
     Set up supported arguments
-    '''
+    """
 
     def setup(self):
         if self.requestedAction == admin.ACTION_EDIT:
             for field in fields:
                 self.supportedArgs.addOptArg(field)
 
-    '''
+    """
     Read the initial values of the parameters from the custom file
     pdns.conf, and write them to the setup page.
 
@@ -30,8 +31,7 @@ class ConfigApp(admin.MConfigHandler):
     .../local/pdns.conf
 
     For text fields, if the conf file says None, set to the empty string.
-    '''
-
+    """
 
     def handleList(self, confInfo):
         confDict = self.readConf("pdns")
@@ -43,10 +43,10 @@ class ConfigApp(admin.MConfigHandler):
                     confInfo[stanza].append(key, val)
 
     def handleEdit(self, confInfo):
-        '''
+        """
         After user clicks Save on setup page, take updated parameters,
         normalize them, and save them somewhere
-        '''
+        """
 
         name = self.callerArgs.id
         args = self.callerArgs
@@ -55,12 +55,12 @@ class ConfigApp(admin.MConfigHandler):
             if not self.callerArgs.data[field][0]:
                 self.callerArgs.data[field][0] = fields[field].get("default", "")
 
-        '''
+        """
         Since we are using a conf file to store parameters,
         write them to the [config] stanza in pdns/local/pdns.conf
-        '''
+        """
 
-        self.writeConf('pdns', 'config', self.callerArgs.data)
+        self.writeConf("pdns", "config", self.callerArgs.data)
 
 
 # initialize the handler
