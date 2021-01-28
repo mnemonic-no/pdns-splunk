@@ -39,13 +39,11 @@ def main():
                 Intersplunk.parseError(str(e))
                 return
 
-        if query:
-            if "query" not in event:
-                event["query"] = query.keys()
+        if query and "query" not in event:
+            event["query"] = ",".join(query.keys())
 
-        if answer:
-            if "answer" not in event:
-                event["answer"] = answer.keys()
+        if answer and "answer" not in event:
+            event["answer"] = ",".join(answer.keys())
 
     Intersplunk.outputResults(events)
 
